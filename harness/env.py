@@ -4,57 +4,48 @@ from hud import Environment
 
 from agent.wrapper import _extract_code, _exec_script
 from agent.prompt import build_script_prompt
+from generator.schema_generation import get_schema
+from generator.schema import validate_schema
+from generator.difficulty_dial import apply_difficulty, obfuscate_dest_schema, translate_dest_data
+from generator.data_generation import generate_source_data, make_gemini_model
 
 env = Environment(name="rebar-migration")
 
-
-# ── Stubs ──────────────────────────────────────────────────────────────────
-# Swap these three functions out once the real modules are ready:
-#   _stub_orchestrate  → generator.orchestration.orchestrate(tier)
-#   _stub_generate_data → generator.data_generation.generate_source_data(schema)
-#   _stub_grade        → grader.grader.Grader(source_schema, transforms).grade(source_data, dest)
-
-def _stub_orchestrate(tier: int) -> tuple:
-    source_schema = {
-        "entities": {
-            "User": {
-                "fields": {
-                    "id":    {"kind": "id"},
-                    "name":  {"kind": "text"},
-                    "score": {"kind": "number"},
-                }
-            }
-        },
-        "nested_blocks": {}
-    }
-    dest_schema = {
-        "entities": {
-            "User": {
-                "fields": {
-                    "id":      {"kind": "id"},
-                    "name_v2": {"kind": "text"},
-                    "score":   {"kind": "number"},
-                }
-            }
-        },
-        "nested_blocks": {}
-    }
-    transformations = [
-        {"type": "rename", "entity": "User", "from": "name", "to": "name_v2"}
-    ]
-    return source_schema, dest_schema, transformations
+# Gemini model — initialized once on first episode, None if key not set
+_gemini = None
+_gemini_tried = False
 
 
-def _stub_generate_data(source_schema: dict, n: int = 3) -> dict:
-    return {
-        "User": [
-            {"id": i, "name": f"User{i}", "score": i * 10}
-            for i in range(1, n + 1)
-        ]
-    }
+def _get_gemini():
+    global _gemini, _gemini_tried
+    if not _gemini_tried:
+        _gemini_tried = True
+        try:
+            _gemini = make_gemini_model()
+        except Exception:
+            _gemini = None
+    return _gemini
 
 
-def _stub_grade(source_data: dict, dest_store: dict, transformations: list) -> float:
+def _generate_episode(tier: int) -> tuple:
+    """Generate one migration episode. Retries until schema is valid (max 10 attempts)."""
+    source_schema = None
+    for _ in range(10):
+        candidate = get_schema(tier)
+        if not validate_schema(candidate):   # empty list = valid
+            source_schema = candidate
+            break
+    if source_schema is None:
+        source_schema = get_schema(tier)     # use last attempt if all failed validation
+
+    dest_schema, transformations = apply_difficulty(source_schema, tier)
+    source_data = generate_source_data(source_schema, n=3, gemini_model=_get_gemini())
+    return source_schema, dest_schema, transformations, source_data
+
+
+# ── Stub grader (replace with Grader(...).grade(...) once grader module is ready) ──
+
+def _stub_grade(source_data: dict, dest_store: dict) -> float:
     """Coverage-only grade — replace with real Grader."""
     total, hits = 0, 0
     for entity, records in source_data.items():
@@ -69,15 +60,18 @@ def _stub_grade(source_data: dict, dest_store: dict, transformations: list) -> f
 # ── HUD environment template ───────────────────────────────────────────────
 
 @env.template()
-async def migrate(tier: int = 0):
-    source_schema, dest_schema, transformations = _stub_orchestrate(tier)
-    source_data = _stub_generate_data(source_schema)
+async def migrate(tier: int = 2):
+    source_schema, dest_schema, transformations, source_data = _generate_episode(tier)
+
+    # Tier 3: obfuscate dest schema before showing it to the model
+    entity_map, field_maps = None, None
+    if tier == 3:
+        dest_schema, entity_map, field_maps = obfuscate_dest_schema(dest_schema)
 
     prompt = build_script_prompt(source_schema, dest_schema, source_data)
     raw_response = yield prompt
 
     code = _extract_code(raw_response)
-
     dest_store: dict = {}
 
     def write_dest(entity: str, records: list) -> dict:
@@ -92,5 +86,8 @@ async def migrate(tier: int = 0):
         "__builtins__": builtins,
     })
 
-    score = _stub_grade(source_data, dest_store, transformations)
+    # Tier 3: reverse obfuscation so grader sees real names
+    real_dest = translate_dest_data(dest_store, entity_map, field_maps) if tier == 3 else dest_store
+
+    score = _stub_grade(source_data, real_dest)
     yield score / 100.0

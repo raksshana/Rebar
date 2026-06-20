@@ -15,7 +15,7 @@ _GATEWAY_MODELS = {
 
 _FIREWORKS_MODEL = "accounts/fireworks/models/llama-v3p1-70b-instruct"
 
-TIERS = [0, 1, 2, 3]
+TIERS = [2, 3]  # Tier 0/1 not yet implemented in generator
 
 
 def _build_agents(fireworks_api_key: str | None = None) -> dict:
@@ -63,7 +63,7 @@ def print_report(results: dict) -> None:
     col = 24
     print(f"\n{'':8}" + "".join(f"{l:>{col}}" for l in labels))
     print("-" * (8 + col * len(labels)))
-    for tier in TIERS:
+    for tier in tiers:
         row = f"Tier {tier}  "
         for label in labels:
             s = results[label].get(tier)
