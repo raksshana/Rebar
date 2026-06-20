@@ -1,0 +1,5 @@
+hud-python
+anthropic
+openai
+google-genai
+faker
