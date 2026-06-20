@@ -99,6 +99,33 @@ Hybrid Faker + Gemini data generator. One batched Gemini call per entity (not pe
 - `_llm_batch(context_label, llm_fields, n, model)` — one Gemini call for all LLM-needed fields across all N records; parses JSON array from response with regex fallback.
 - `_generate_block_items(entity, block, block_def, id_pools, model)` — 1–3 nested items per record.
 
+---
+
+## 2026-06-20 — Bug Fixes & Full Pipeline Confirmed Working
+
+### Bugs Fixed
+
+**`Taskset([task])` → 0 runs**
+`Taskset.__init__` signature is `(name, tasks, ...)`. Passing `[task]` as the first arg set `name=[task]` and left `tasks=()` empty. Fixed to `Taskset("rebar-name", [task])`. All harness and test calls updated.
+
+**`gemini-1.5-flash` model not found (404)**
+`google.generativeai` is deprecated and its v1beta API no longer has `gemini-1.5-flash`. Switched the entire project to `google-genai` (the new SDK). `make_gemini_model()` now returns a `genai.Client(api_key=...)` and `_llm_batch()` calls `client.models.generate_content(model="gemini-2.0-flash", ...)`.
+
+**Gemini API errors crashing episodes**
+Wrapped `gemini_model.generate_content()` in a `try/except Exception` that falls back to stub strings, so a Gemini failure degrades gracefully rather than crashing the episode.
+
+### End-to-End Confirmed
+Both tests in `tests/test_hud_single.py` pass:
+- Minimal task (`2+2?`): `reward=1.0`
+- Full `migrate(tier=2)` via LocalRuntime: `reward=1.0`
+
+Real data generation (Faker + Gemini 2.0 Flash) is running inside HUD child process. Model writes records, stub grader checks IDs.
+
+### Next: Build Real Grader
+The stub grader only checks if source IDs appear in `dest_store`. Need to build `grader/grader.py` that checks field-level correctness against ground truth transformations.
+
+---
+
 ### How HUD fits the pipeline
 ```
 HUD calls model × N episodes
