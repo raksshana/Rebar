@@ -259,7 +259,7 @@ def make_gemini_model(api_key: str | None = None):
     import os
     import google.generativeai as genai
     genai.configure(api_key=api_key or os.environ["GEMINI_API_KEY"])
-    return genai.GenerativeModel("gemini-2.0-flash")
+    return genai.GenerativeModel("gemini-1.5-flash")
 
 
 def generate_source_data(

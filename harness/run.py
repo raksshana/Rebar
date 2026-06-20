@@ -10,7 +10,7 @@ from harness.env import migrate
 # Models routed through HUD's gateway
 _GATEWAY_MODELS = {
     "claude-sonnet": "claude-sonnet-4-6",
-    "gemini":        "gemini-2.0-flash",
+    "gemini":        "gemini-3.5-flash",
 }
 
 _FIREWORKS_MODEL = "accounts/fireworks/models/llama-v3p1-70b-instruct"
@@ -43,11 +43,18 @@ async def evaluate(
         for tier in tiers:
             tasks = [migrate(tier=tier) for _ in range(n_per_cell)]
             job = await Taskset(tasks).run(agent)
+
             scores = [
                 run.reward * 100
-                for runs in job.results.values()
-                for run in runs
+                for run in job.runs
+                if run.reward is not None
             ]
+
+            if not scores:
+                print(f"[warn] no scores returned for {label} tier={tier}")
+                results[label][tier] = {"mean": 0.0, "min": 0.0, "max": 0.0, "n": 0}
+                continue
+
             results[label][tier] = {
                 "mean": round(sum(scores) / len(scores), 1),
                 "min":  round(min(scores), 1),
@@ -58,7 +65,7 @@ async def evaluate(
     return results
 
 
-def print_report(results: dict) -> None:
+def print_report(results: dict, tiers: list[int] = TIERS) -> None:
     labels = list(results.keys())
     col = 24
     print(f"\n{'':8}" + "".join(f"{l:>{col}}" for l in labels))
@@ -67,7 +74,7 @@ def print_report(results: dict) -> None:
         row = f"Tier {tier}  "
         for label in labels:
             s = results[label].get(tier)
-            cell = f"{s['mean']} ({s['min']}–{s['max']})" if s else "-"
+            cell = f"{s['mean']} ({s['min']}–{s['max']})" if s and s["n"] > 0 else "-"
             row += f"{cell:>{col}}"
         print(row)
     print()
