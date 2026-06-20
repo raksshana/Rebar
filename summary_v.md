@@ -45,3 +45,37 @@ Each block has 3–6 richer fields than the previous version.
 - Optional fields: max(1, 2/3 of pool)..N sampled (more fields per entity).
 - Validated: 20/20 pass; 78–133 total fields per schema; 6–16 refs; 11–28 enums.
 - Entity combos vary widely across runs (project-tracking, devops, CRM, e-commerce, etc.).
+
+### Created `generator/difficulty_dial.py`
+`apply_difficulty(source_schema, tier)` → `(dest_schema, transformations)` — Tier 2 and Tier 3 only.
+
+**T1 noise (`_apply_tier1`):** rename 1–2 non-id/non-nested fields; retype 1–2 coercible fields
+(coercion table: text→richtext, richtext→text, number→text/bool, date→text, bool→number);
+60%-chance enum_remap (all values of one enum field suffixed with _v2/_new/_updated).
+
+**Tier 2 (`_apply_tier2`):** shuffle pool {split, merge, flatten_nested, unmapped}, try first 2.
+Fall back to T1 if 0 structural ops succeed. Validated 50/50 PASS.
+
+**Tier 3 (`_apply_tier3`):** ordered pipeline —
+1. T1 noise, 2. unmapped, 3. extract_nested, 4. split, 5. merge×2, 6. partition, 7. denormalize,
+8. computed×1–2. Entity exclusion sets prevent dangling refs at each step.
+Validated 50/50 PASS. All 10 transform types fire across 50 samples.
+
+**Structural transforms:**
+- `_try_split`: picks entity with ≥4 fields; moves random subset of scalars to `{Name}Detail`
+  with back-ref `{name_lower}_id` FK.
+- `_try_merge`: child must have exactly 1 ref to parent; parent must have no other incoming refs;
+  child must have no incoming refs. Child's `id` field dropped. Merges into `{Parent}{Suffix}`.
+- `_try_flatten_nested`: replaces nested field with `{field}_count: number`.
+- `_try_extract_nested`: moves nested block to new `{BlockBase}{Suffix}` child entity with FK.
+- `_try_partition`: splits entity by enum discriminator into `{Synonym}{Entity}` sub-entities;
+  restricted to entities with no incoming refs (prevents dangling refs on deletion).
+  T1-remapped enum values resolved back to originals for synonym lookup.
+- `_try_denormalize`: inlines 1–2 scalars from ref target; stores pre-rename source field name.
+- `_try_computed`: adds opaque derived field (concat/multiply/sum_fields/bool_from_enum);
+  denorm inline fields excluded as source candidates.
+
+**Obfuscation (Tier 3):**
+- `obfuscate_dest_schema(dest)` → `(obf_schema, entity_map, field_maps)`: EntityA/fa/fb labelling,
+  shuffled order, `id` stays `id`, `ref.target` rewritten.
+- `translate_dest_data(dest_data, entity_map, field_maps)`: reverses obfuscation for grader.
