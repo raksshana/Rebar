@@ -43,7 +43,7 @@ async def evaluate(
         results[label] = {}
         for tier in tiers:
             tasks = [migrate(tier=tier) for _ in range(n_per_cell)]
-            job = await Taskset(tasks).run(agent, runtime=LocalRuntime("harness/env.py"))
+            job = await Taskset(f"rebar-{label}-tier{tier}", tasks).run(agent, runtime=LocalRuntime("harness/env.py"))
 
             print(f"\n[debug] {label} tier={tier}: {len(job.runs)} runs")
             for i, run in enumerate(job.runs[:2]):  # show first 2
