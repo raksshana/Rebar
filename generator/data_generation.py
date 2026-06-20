@@ -103,13 +103,16 @@ def _llm_batch(context_label: str, llm_fields: dict, n: int, gemini_model) -> li
         f"- Return ONLY a raw JSON array of {n} objects with exactly the listed field names\n"
         f"- No explanation, no markdown fences — just the JSON array"
     )
-    response = gemini_model.generate_content(prompt)
-    text = response.text.strip()
-    match = re.search(r"\[.*?\]", text, re.DOTALL)
     try:
+        response = gemini_model.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+        )
+        text = response.text.strip()
+        match = re.search(r"\[.*?\]", text, re.DOTALL)
         records = json.loads(match.group(0) if match else text)
         return records[:n]
-    except (json.JSONDecodeError, AttributeError):
+    except Exception:
         return [{name: f"{name}_{i + 1}" for name in llm_fields} for i in range(n)]
 
 
@@ -255,11 +258,10 @@ def _generate_entity_records(
 # ── Public API ────────────────────────────────────────────────────────────
 
 def make_gemini_model(api_key: str | None = None):
-    """Build a Gemini GenerativeModel. Reads GEMINI_API_KEY from env if api_key not given."""
+    """Build a Gemini client. Reads GEMINI_API_KEY from env if api_key not given."""
     import os
-    import google.generativeai as genai
-    genai.configure(api_key=api_key or os.environ["GEMINI_API_KEY"])
-    return genai.GenerativeModel("gemini-1.5-flash")
+    from google import genai
+    return genai.Client(api_key=api_key or os.environ["GEMINI_API_KEY"])
 
 
 def generate_source_data(
