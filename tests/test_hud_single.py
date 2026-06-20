@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from hud.eval import Taskset
-from hud.runtime import LocalRuntime
+from hud import LocalRuntime
 from hud.agents import create_agent
 from harness.env import migrate
 

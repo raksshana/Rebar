@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from hud.eval import Taskset
-from hud.runtime import LocalRuntime
+from hud import LocalRuntime
 from hud.agents import create_agent, OpenAIChatAgent
 from hud.agents.types import OpenAIChatConfig
 
