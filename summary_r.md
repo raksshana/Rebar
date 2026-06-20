@@ -75,6 +75,30 @@ HUD replaces the manual eval loop. You define the episode logic inside a `@env.t
 **`harness/__init__.py`**
 - Re-exports `env`, `migrate`, `evaluate`, `print_report`
 
+---
+
+## 2026-06-20 — Source Data Generator
+
+**`generator/data_generation.py`**
+
+Hybrid Faker + Gemini data generator. One batched Gemini call per entity (not per field), so API usage stays low.
+
+**Field routing — Faker vs Gemini:**
+- Faker: `number`, `bool`, `date`, `enum`, `multi_enum`, `ref`, and `text` fields whose names match a known pattern (email, name, phone, city, street, url, hostname, ip, company, code, slug, version, uuid, token, label, title, etc.)
+- Gemini: `richtext` fields always; `text` fields with unrecognized names (e.g. `warehouse`, `scope`, `body`) — Gemini sees the entity name so `Product.name` vs `Category.name` gets different contextually correct values.
+- Fallback: if no Gemini model provided, writes `fieldname_id` stubs so pipeline still runs.
+
+**Nested block handling:** `nested` fields generate 1–3 block items per record. Same Faker/Gemini split applies to block fields. Context passed to Gemini is `"EntityName.BlockName"`.
+
+**Topological sort:** entities are generated in dependency order so ref target IDs are always available before entities that reference them.
+
+**Key functions:**
+- `generate_source_data(source_schema, n=3, gemini_model=None) -> dict[entity -> list[record]]`
+- `make_gemini_model(api_key=None)` — configures `google.generativeai` and returns `gemini-2.0-flash` model; reads `GEMINI_API_KEY` from env if not passed.
+- `_topo_sort(entities)` — DFS topological sort on ref deps.
+- `_llm_batch(context_label, llm_fields, n, model)` — one Gemini call for all LLM-needed fields across all N records; parses JSON array from response with regex fallback.
+- `_generate_block_items(entity, block, block_def, id_pools, model)` — 1–3 nested items per record.
+
 ### How HUD fits the pipeline
 ```
 HUD calls model × N episodes
