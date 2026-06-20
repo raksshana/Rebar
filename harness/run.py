@@ -2,6 +2,7 @@ import asyncio
 import os
 
 from hud.eval import Taskset
+from hud.runtime import LocalRuntime
 from hud.agents import create_agent, OpenAIChatAgent
 from hud.agents.types import OpenAIChatConfig
 
@@ -42,7 +43,11 @@ async def evaluate(
         results[label] = {}
         for tier in tiers:
             tasks = [migrate(tier=tier) for _ in range(n_per_cell)]
-            job = await Taskset(tasks).run(agent)
+            job = await Taskset(tasks).run(agent, runtime=LocalRuntime("harness/env.py"))
+
+            print(f"\n[debug] {label} tier={tier}: {len(job.runs)} runs")
+            for i, run in enumerate(job.runs[:2]):  # show first 2
+                print(f"  run[{i}] reward={run.reward} status={getattr(run, 'status', '?')} trace={getattr(run, 'trace', '?')}")
 
             scores = [
                 run.reward * 100
