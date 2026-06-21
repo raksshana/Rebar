@@ -50,9 +50,23 @@ export default function MigrationEngine() {
 
   return (
     <section style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'50px 40px 80px' }}>
+      {/* section header */}
+      <div style={{ textAlign:'center', marginBottom:40 }}>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:10, fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.32em', color:'#8b7bff', marginBottom:22 }}>
+          <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />TRY IT LIVE<span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />
+        </div>
+        <h2 style={{ margin:0, fontSize:48, lineHeight:1.05, fontWeight:700, letterSpacing:'-.025em' }}>
+          Run a real migration.<br/>
+          <span style={{ background:'linear-gradient(100deg,#8b7bff,#2fe6d6)', WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent' }}>Watch every record get verified.</span>
+        </h2>
+        <p style={{ margin:'16px auto 0', maxWidth:520, fontSize:15, lineHeight:1.6, color:'#9aa3b8' }}>
+          Generate a random schema migration scenario and run it. The agent reads both schemas, writes the transform, and proves every record made it across.
+        </p>
+      </div>
+
       <div style={{ border:'1px solid rgba(139,123,255,.18)', borderRadius:18, background:'linear-gradient(170deg,rgba(16,18,32,.7),rgba(8,10,18,.7))', overflow:'hidden', boxShadow:'0 24px 70px rgba(0,0,0,.4)' }}>
         {/* header */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 24px', borderBottom:'1px solid rgba(255,255,255,.06)' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 28px', borderBottom:'1px solid rgba(255,255,255,.06)' }}>
           <div style={{ display:'flex', alignItems:'center', gap:11 }}>
             <div style={{ display:'flex', gap:3, alignItems:'flex-end', height:15 }}>
               <div style={{ width:3, height:7,  background:'#8b7bff' }} />
@@ -70,7 +84,7 @@ export default function MigrationEngine() {
             <button onClick={run}   style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 17px', borderRadius:7, border:'none', background:'linear-gradient(100deg,#8b7bff,#6d5cf0)', fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:500, color:'#fff', cursor:'pointer', boxShadow:'0 0 24px rgba(139,123,255,.35)' }}>Run migration →</button>
           </div>
         </div>
-        <div style={{ padding:'28px 24px' }}>
+        <div style={{ padding:'36px 28px' }}>
           <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, letterSpacing:'.2em', color:'#5a6178', marginBottom:8 }}>GENERATED SCENARIO</div>
           <div style={{ fontSize:21, fontWeight:600, marginBottom:24 }}>Legacy CRM <span style={{ color:'#8b7bff' }}>→</span> Modern Customer Platform</div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:16 }}>
@@ -123,6 +137,7 @@ export default function MigrationEngine() {
     </section>
   )
 }
+
 
 function Mono({ children, style }) {
   return <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, letterSpacing:'.18em', color:'#5a6178', ...style }}>{children}</div>
