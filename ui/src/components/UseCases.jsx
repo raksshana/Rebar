@@ -38,7 +38,7 @@ const SCALE = [
 
 export default function UseCases() {
   return (
-    <section id="research" style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 60px', textAlign:'center' }}>
+    <section id="future" style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 60px', textAlign:'center' }}>
       <div style={{ display:'inline-flex', alignItems:'center', gap:10, fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.32em', color:'#8b7bff', marginBottom:22 }}>
         <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />WHY THIS IS HARD<span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />
       </div>

@@ -3,7 +3,7 @@ import React from 'react'
 const LINKS = [
   { label:'Benchmarks', href:'#benchmarks' },
   { label:'Training',   href:'#training' },
-  { label:'Research',   href:'#research' },
+  { label:'The Future', href:'#future' },
 ]
 
 export default function Nav() {

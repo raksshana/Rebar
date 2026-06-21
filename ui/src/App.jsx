@@ -1,10 +1,11 @@
 import React from 'react'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
-import MigrationEngine from './components/MigrationEngine'
-import RLChart from './components/RLChart'
-import ModelComparison from './components/ModelComparison'
 import UseCases from './components/UseCases'
+import MigrationEngine from './components/MigrationEngine'
+import ModelComparison from './components/ModelComparison'
+import RLChart from './components/RLChart'
+import CTA from './components/CTA'
 
 export default function App() {
   return (
@@ -22,10 +23,11 @@ export default function App() {
 
       <Nav />
       <Hero />
-      <MigrationEngine />
-      <RLChart />
-      <ModelComparison />
       <UseCases />
+      <MigrationEngine />
+      <ModelComparison />
+      <RLChart />
+      <CTA />
     </div>
   )
 }
