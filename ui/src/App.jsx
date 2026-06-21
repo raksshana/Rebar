@@ -1,7 +1,6 @@
 import React from 'react'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
-import CapabilityStrip from './components/CapabilityStrip'
 import MigrationEngine from './components/MigrationEngine'
 import RLChart from './components/RLChart'
 import ModelComparison from './components/ModelComparison'
@@ -24,7 +23,6 @@ export default function App() {
 
       <Nav />
       <Hero />
-      <CapabilityStrip />
       <MigrationEngine />
       <RLChart />
       <ModelComparison />

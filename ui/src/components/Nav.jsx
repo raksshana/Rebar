@@ -1,6 +1,6 @@
 import React from 'react'
 
-const LINKS = ['Product','Benchmarks','Training','Research']
+const LINKS = ['Benchmarks','Training','Research']
 
 export default function Nav() {
   return (
