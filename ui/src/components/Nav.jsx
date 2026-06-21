@@ -1,11 +1,9 @@
 import React from 'react'
 
 const LINKS = ['Product','Benchmarks','Training','Research']
-const TICKER = ['● AGENT.ONLINE','SCHEMAS_DISCOVERED 18','FIELDS_MAPPED 142/142','RECORDS 24,000','VALIDATION 99.6%','ISSUES_REPAIRED 31','RL_CHECKPOINT 380','HELD_OUT_SCORE 84.7']
 
 export default function Nav() {
   return (
-    <>
       <nav style={{
         position:'sticky', top:0, zIndex:50,
         display:'flex', alignItems:'center', justifyContent:'space-between',
@@ -35,25 +33,5 @@ export default function Nav() {
           Run live migration <span style={{ color:'#8b7bff', marginLeft:4 }}>→</span>
         </div>
       </nav>
-
-      {/* Telemetry ticker */}
-      <div style={{
-        position:'relative', zIndex:40, overflow:'hidden',
-        borderBottom:'1px solid rgba(255,255,255,.06)',
-        background:'rgba(8,10,18,.6)', height:30,
-        display:'flex', alignItems:'center'
-      }}>
-        <div style={{
-          display:'flex', gap:42, whiteSpace:'nowrap',
-          fontFamily:"'JetBrains Mono',monospace", fontSize:10.5,
-          letterSpacing:'.12em', color:'#5a6178',
-          animation:'ticker 36s linear infinite', paddingLeft:42
-        }}>
-          {[...TICKER, ...TICKER].map((t,i) => (
-            <span key={i} style={t.startsWith('●') ? {color:'#2fe6d6'} : t.includes('VALIDATION') || t.includes('CHECKPOINT') ? {color:'#8b7bff'} : {}}>{t}</span>
-          ))}
-        </div>
-      </div>
-    </>
   )
 }
