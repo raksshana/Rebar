@@ -49,15 +49,14 @@ export default function MigrationEngine() {
   if (done)    { centerKicker='COMPLETE';    centerTitle='99.6%'; centerSub='Every record migrated, validated and proven correct.' }
 
   return (
-    <section style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'50px 40px 80px' }}>
+    <section id="live-migration" style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'50px 40px 80px' }}>
       {/* section header */}
       <div style={{ textAlign:'center', marginBottom:40 }}>
         <div style={{ display:'inline-flex', alignItems:'center', gap:10, fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.32em', color:'#8b7bff', marginBottom:22 }}>
           <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />TRY IT LIVE<span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />
         </div>
         <h2 style={{ margin:0, fontSize:48, lineHeight:1.05, fontWeight:700, letterSpacing:'-.025em' }}>
-          Run a real migration.<br/>
-          <span style={{ background:'linear-gradient(100deg,#8b7bff,#2fe6d6)', WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent' }}>Watch every record get verified.</span>
+          Run a real migration.
         </h2>
         <p style={{ margin:'16px auto 0', maxWidth:520, fontSize:15, lineHeight:1.6, color:'#9aa3b8' }}>
           Generate a random schema migration scenario and run it. The agent reads both schemas, writes the transform, and proves every record made it across.
@@ -84,41 +83,41 @@ export default function MigrationEngine() {
             <button onClick={run}   style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 17px', borderRadius:7, border:'none', background:'linear-gradient(100deg,#8b7bff,#6d5cf0)', fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:500, color:'#fff', cursor:'pointer', boxShadow:'0 0 24px rgba(139,123,255,.35)' }}>Run migration →</button>
           </div>
         </div>
-        <div style={{ padding:'36px 28px' }}>
-          <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, letterSpacing:'.2em', color:'#5a6178', marginBottom:8 }}>GENERATED SCENARIO</div>
-          <div style={{ fontSize:21, fontWeight:600, marginBottom:24 }}>Legacy CRM <span style={{ color:'#8b7bff' }}>→</span> Modern Customer Platform</div>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:16 }}>
+        <div style={{ padding:'48px 36px' }}>
+          <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, letterSpacing:'.2em', color:'#5a6178', marginBottom:10 }}>GENERATED SCENARIO</div>
+          <div style={{ fontSize:28, fontWeight:600, marginBottom:32 }}>Legacy CRM <span style={{ color:'#8b7bff' }}>→</span> Modern Customer Platform</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:20 }}>
             {/* BEFORE */}
-            <div style={{ border:'1px solid rgba(255,255,255,.07)', borderRadius:12, padding:18, background:'rgba(255,255,255,.015)' }}>
-              <Mono style={{ marginBottom:6 }}>BEFORE</Mono>
-              <div style={{ fontWeight:600, fontSize:15 }}>Legacy CRM</div>
-              <div style={{ fontSize:11, color:'#717a90', margin:'3px 0 16px' }}>Complex source data</div>
+            <div style={{ border:'1px solid rgba(255,255,255,.07)', borderRadius:14, padding:28, background:'rgba(255,255,255,.015)' }}>
+              <Mono style={{ marginBottom:8 }}>BEFORE</Mono>
+              <div style={{ fontWeight:600, fontSize:18 }}>Legacy CRM</div>
+              <div style={{ fontSize:12, color:'#717a90', margin:'4px 0 20px' }}>Complex source data</div>
               <EngineRow label="tables"  value="18" />
               <EngineRow label="fields"  value="142" />
               <EngineRow label="records" value="24,000" />
               <EngineRow label="data issues" value="31" valueColor="#ff6b8a" last />
             </div>
             {/* MIDDLE */}
-            <div style={{ border:'1px solid rgba(139,123,255,.2)', borderRadius:12, padding:18, background:'rgba(139,123,255,.04)', display:'flex', flexDirection:'column' }}>
-              <div style={{ display:'flex', gap:8, marginBottom:20 }}>
+            <div style={{ border:'1px solid rgba(139,123,255,.2)', borderRadius:14, padding:28, background:'rgba(139,123,255,.04)', display:'flex', flexDirection:'column', minHeight:320 }}>
+              <div style={{ display:'flex', gap:8, marginBottom:24 }}>
                 <div style={stepStyle(s.progress>0.02)}>1 Understand</div>
                 <div style={stepStyle(s.progress>0.4)}>2 Transform</div>
                 <div style={stepStyle(s.progress>0.85||done)}>3 Verify</div>
               </div>
               <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center' }}>
-                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, letterSpacing:'.2em', color:'#8b7bff', marginBottom:8 }}>{centerKicker}</div>
-                <div style={{ fontSize:24, fontWeight:700, marginBottom:8 }}>{centerTitle}</div>
-                <div style={{ fontSize:12, color:'#717a90', maxWidth:240, lineHeight:1.5 }}>{centerSub}</div>
-                <div style={{ width:'100%', height:5, borderRadius:99, background:'rgba(255,255,255,.06)', marginTop:18, overflow:'hidden' }}>
+                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, letterSpacing:'.2em', color:'#8b7bff', marginBottom:10 }}>{centerKicker}</div>
+                <div style={{ fontSize:32, fontWeight:700, marginBottom:10 }}>{centerTitle}</div>
+                <div style={{ fontSize:13, color:'#717a90', maxWidth:260, lineHeight:1.5 }}>{centerSub}</div>
+                <div style={{ width:'100%', height:6, borderRadius:99, background:'rgba(255,255,255,.06)', marginTop:24, overflow:'hidden' }}>
                   <div style={{ height:'100%', width:pct+'%', borderRadius:99, background:'linear-gradient(90deg,#8b7bff,#2fe6d6)', boxShadow:'0 0 12px rgba(47,230,214,.5)', transition:'width .2s' }} />
                 </div>
               </div>
             </div>
             {/* AFTER */}
-            <div style={{ border:'1px solid rgba(47,230,214,.18)', borderRadius:12, padding:18, background:'rgba(47,230,214,.025)' }}>
-              <Mono style={{ marginBottom:6 }}>AFTER</Mono>
-              <div style={{ fontWeight:600, fontSize:15 }}>Modern Customer Platform</div>
-              <div style={{ fontSize:11, color:'#717a90', margin:'3px 0 16px' }}>Clean, verified destination</div>
+            <div style={{ border:'1px solid rgba(47,230,214,.18)', borderRadius:14, padding:28, background:'rgba(47,230,214,.025)' }}>
+              <Mono style={{ marginBottom:8 }}>AFTER</Mono>
+              <div style={{ fontWeight:600, fontSize:18 }}>Modern Customer Platform</div>
+              <div style={{ fontSize:12, color:'#717a90', margin:'4px 0 20px' }}>Clean, verified destination</div>
               <EngineRow label="mapped fields"    value={s.fields} valueColor="#2fe6d6" />
               <EngineRow label="records migrated" value={s.records.toLocaleString()} valueColor="#2fe6d6" />
               <EngineRow label="relationships"    value={running||done ? s.relations : '—'} valueColor="#2fe6d6" />
@@ -126,7 +125,7 @@ export default function MigrationEngine() {
             </div>
           </div>
           {/* metric tiles */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginTop:18 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16, marginTop:24 }}>
             <MetricTile label="Fields mapped"     value={`${s.fields} / 142`} />
             <MetricTile label="Records migrated"  value={s.records.toLocaleString()} />
             <MetricTile label="Issues repaired"   value={running||done ? s.issues : 0} />

@@ -1,10 +1,10 @@
 # Rebar
 
-Project for HUD's Frontier RSI/RL Environments Hackathon @ Y Combinator by Raksshana and Vihari
+Built by Raksshana and Vihari for HUD's Frontier RL Environments Hackathon @ Y Combinator.
 
-Rebar is a benchmark and training environment for **schema migration**: given a source database and a target schema, an agent must write a script that transforms and loads the data correctly. We grade every record, not just whether the script runs.
+Data migrations fail silently and cost millions. Rebar is an RL training stack that teaches models to migrate data between mismatched schemas autonomously — generating verifiable tasks, grading every record, and closing the gap where frontier LLMs still break down.
 
-## Why this project
+## Why it matters
 
 Organizations are always migrating data. Legacy databases get replaced by modern warehouses. Acquisitions fold one company's CRM into another's. Teams outgrow spreadsheets and move to Postgres, Snowflake, or Databricks. The natural end state is an **AI agent** that reads both schemas, writes the transformation code, runs it, and verifies the output—fully autonomously, at any scale.
 
