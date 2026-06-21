@@ -66,9 +66,9 @@ These are exactly the skills Rebar is built to measure and improve. An agent mus
 ┌─────────────────────────────────────────────────────────────────┐
 │                       HUD Training Loop                         │
 │                                                                 │
-│  GRPO: each task runs group_size times with the same seed so    │
-│  all rollouts in a group see identical schemas and data.        │
-│  Reward signal drives RL training of Kimi K2.5 entirely in HUD.│
+│  Online RL: the model trains continuously as episodes run.      │
+│  GRPO groups identical tasks (same seed) so rollouts within a  │
+│  group are directly comparable. HUD handles the training loop.  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
