@@ -68,7 +68,7 @@ These are exactly the skills Rebar is built to measure and improve. An agent mus
 │                                                                 │
 │  GRPO: each task runs group_size times with the same seed so    │
 │  all rollouts in a group see identical schemas and data.        │
-│  Reward signal drives fine-tuning of Kimi K2.5 via Fireworks.  │
+│  Reward signal drives RL training of Kimi K2.5 entirely in HUD.│
 └─────────────────────────────────────────────────────────────────┘
 ```
 
