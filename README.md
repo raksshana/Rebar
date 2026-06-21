@@ -1,6 +1,6 @@
 # Rebar
 
-Rebar is an RL training stack that teaches models to migrate data between mismatched schemas autonomously — generating verifiable tasks, grading every record, and closing the gap where frontier LLMs still break down.
+Data migrations fail silently and cost millions. Rebar is an RL training stack that trains models to autonomously migrate data between schemas — inferring entity mappings, preserving relationships, and executing structural transforms — and grades every record to prove it worked.
 
 ## Why it matters
 
