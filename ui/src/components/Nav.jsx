@@ -1,6 +1,10 @@
 import React from 'react'
 
-const LINKS = ['Benchmarks','Training','Research']
+const LINKS = [
+  { label:'Benchmarks', href:'#benchmarks' },
+  { label:'Training',   href:'#training' },
+  { label:'Research',   href:'#research' },
+]
 
 export default function Nav() {
   return (
@@ -21,7 +25,13 @@ export default function Nav() {
           <span style={{ fontWeight:700, letterSpacing:'.22em', fontSize:15 }}>REBAR</span>
         </div>
         <div style={{ display:'flex', gap:38, fontFamily:"'JetBrains Mono',monospace", fontSize:12.5, letterSpacing:'.04em', color:'#9aa3b8' }}>
-          {LINKS.map(l => <span key={l} style={{ cursor:'pointer' }}>{l}</span>)}
+          {LINKS.map(({ label, href }) => (
+            <a key={label} href={href} style={{ color:'inherit', textDecoration:'none', cursor:'pointer' }}
+              onMouseEnter={e => e.currentTarget.style.color='#e9edf6'}
+              onMouseLeave={e => e.currentTarget.style.color='#9aa3b8'}>
+              {label}
+            </a>
+          ))}
         </div>
       </nav>
   )

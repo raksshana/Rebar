@@ -7,7 +7,7 @@ const READOUTS = [
 ]
 export default function RLChart() {
   return (
-    <section style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 80px' }}>
+    <section id="training" style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 80px' }}>
       <div style={{ textAlign:'center', marginBottom:48 }}>
         <div style={{ display:'inline-flex', alignItems:'center', gap:10, fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.32em', color:'#8b7bff', marginBottom:22 }}>
           <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />REINFORCEMENT LEARNING<span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />
