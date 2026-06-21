@@ -72,11 +72,8 @@ These are exactly the skills Rebar is built to measure and improve. An agent mus
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Difficulty tiers
+### Transforms applied
 
-| Tier | What the model sees | Transforms applied |
-|------|--------------------|--------------------|
-| 2    | Real entity and field names | Renames, retypes, enum remaps, unmapped fields, flatten nested, computed fields, denormalize |
-| 3    | Obfuscated names (EntityA, fa, fb…) | All of Tier 2 plus merges, splits, partitions, extract nested |
+Entity and field names are obfuscated (EntityA, fa, fb…). The model must reverse-engineer the mapping purely from structural clues — enum value sets, ref targets, field type patterns — with no name hints.
 
-Tier 3 requires the model to reverse-engineer which source entity maps to which destination entity purely from structural clues — enum value sets, ref targets, field type patterns — with no name hints.
+Transforms: renames, retypes, enum remaps, unmapped fields, flatten nested, computed fields, denormalize, merges, splits, partitions, extract nested.
