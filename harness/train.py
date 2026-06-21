@@ -5,7 +5,7 @@ Usage:
     python -m harness.train --model rebar-rl --tier 3 --rounds 20 --group 8
 
 Prereqs:
-    hud models fork moonshot-ai/kimi-k2.7-code --name rebar-rl
+    hud models fork moonshotai/Kimi-K2.5 --name rebar-kimi-k25
 """
 import argparse
 import asyncio
@@ -13,7 +13,7 @@ import asyncio
 from hud import LocalRuntime
 from hud.eval import Taskset, Job
 from hud.agents import create_agent
-from hud.training import TrainingClient
+from hud import TrainingClient
 
 from harness.env import migrate
 
@@ -47,7 +47,12 @@ async def train(
     for round_num in range(1, rounds + 1):
         start_idx = len(session.runs)
 
-        tasks = [migrate(tier=tier) for _ in range(group_size)]
+        tasks = [
+            migrate(tier=tier).model_copy(
+                update={"slug": f"rebar-train-r{round_num}-{i:02d}"}
+            )
+            for i in range(group_size)
+        ]
         await Taskset(f"rebar-train-r{round_num}", tasks).run(
             agent,
             runtime=runtime,

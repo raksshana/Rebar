@@ -1,0 +1,17 @@
+[project]
+name = "rebar"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "hud-python",
+    "anthropic",
+    "openai",
+    "google-genai",
+    "faker",
+]
+
+[tool.hud]
+name = "rebar-migration"
+
+[tool.uv]
+package = false

@@ -145,9 +145,8 @@ def main():
     _dep = lambda dep_id: FireworksClient(f"accounts/{_account}/deployments/{dep_id}")
 
     models = {
-        "kimi-k2p7-code":    _dep("gkehanes"),
-        "claude-opus-4-6":   AnthropicClient("claude-opus-4-6"),
-        "gpt-5.5":           OpenAIClient("gpt-5.5"),
+        "kimi-k2p5": _dep("metnvyc4"),
+        "kimi-k2p6": _dep("dpj8h9ep"),
     }
 
     print(f"Generating {args.n} episode(s) per tier {args.tiers}...")

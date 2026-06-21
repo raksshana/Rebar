@@ -42,7 +42,10 @@ async def evaluate(
     for label, agent in agents.items():
         results[label] = {}
         for tier in tiers:
-            tasks = [migrate(tier=tier) for _ in range(n_per_cell)]
+            tasks = [
+                migrate(tier=tier).model_copy(update={"slug": f"rebar-{label}-t{tier}-{i:02d}"})
+                for i in range(n_per_cell)
+            ]
             job = await Taskset(f"rebar-{label}-tier{tier}", tasks).run(agent, runtime=LocalRuntime("harness/env.py"))
 
             print(f"\n[debug] {label} tier={tier}: {len(job.runs)} runs")
