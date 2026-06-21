@@ -21,3 +21,95 @@ That gap shows up in production migrations and in evals: frontier models score w
 | Excel exports with duplicate rows, broken links, and inconsistent date formats | **Data quality** — nulls, format drift, orphan references, and duplicates that only surface when the agent's script runs on the full dataset |
 
 These are exactly the skills Rebar is built to measure and improve. An agent must **read a source schema, read a target schema, write transformation code, and pass record-level verification**—with difficulty that scales from simple renames to obfuscated, multi-table structural changes. The goal is to find where frontier models fail today, and train them to close the gap toward reliable autonomous migration.
+
+## System architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        generator/                               │
+│                                                                 │
+│  schema_generation.py  →  difficulty_dial.py  →  orchestrate() │
+│  Builds a random          Applies transforms      Ties together │
+│  source schema            (rename, retype,        schema +      │
+│  (entities, fields,       merge, split,           transforms +  │
+│  nested blocks)           partition, etc.)        Grader        │
+│                                                                 │
+│  data_generation.py                                             │
+│  Faker for structured fields (dates, enums, refs)              │
+│  Gemini for richtext and unrecognized text fields              │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ GeneratedTask
+                                │ (source_schema, dest_schema,
+                                │  transformations, grader)
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      migration_episode.py                       │
+│                                                                 │
+│  build_episode(seed, tier, n_records)                           │
+│  Deterministic: same seed → identical schema + data every time  │
+│  Tier 3: obfuscates dest entity/field names (EntityA, fa, fb…) │
+│  before showing them to the model                               │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ prompt
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                          model                                  │
+│                                                                 │
+│  Receives: source schema, dest schema, source data              │
+│  Returns: a Python migration script                             │
+│                                                                 │
+│  Frontier baselines: Claude Opus/Sonnet, GPT-5.5, Gemini Flash  │
+│  RL target: Kimi K2.5 (fine-tuned via Fireworks + HUD GRPO)    │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ script
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     agent/wrapper.py                            │
+│                                                                 │
+│  _extract_code()   strips ```python fences                      │
+│  _exec_script()    exec() with write_dest() injected            │
+│                    captures stdout/stderr, never raises          │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ dest_store
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        grader/                                  │
+│                                                                 │
+│  Tier 3: translate_dest_data() reverses name obfuscation first  │
+│                                                                 │
+│  grader.grade(source_data, dest_data) scores five axes:         │
+│  • coverage               (0–1)  did records reach the right   │
+│                                  destination entity?            │
+│  • field_fidelity         (0–1)  are field values correct?      │
+│  • relationship_integrity (0–1)  do refs point to valid IDs?    │
+│  • type_correctness       (0–1)  are Python types right?        │
+│  • structural             (0–1)  were merges/splits/partitions  │
+│                                  actually performed?            │
+│                                                                 │
+│  total = base × (0.20 + 0.80 × structural) × 100               │
+│  structural acts as a multiplier — a model that copies fields   │
+│  but skips structural transforms is capped at ~20/100           │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ reward (total / 100)
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  harness/ + HUD platform                        │
+│                                                                 │
+│  harness/env.py    HUD Environment template — one episode       │
+│  harness/train.py  GRPO training loop via HUD TrainingClient    │
+│                    group_size rollouts per task, same seed →    │
+│                    identical task for all rollouts in a group   │
+│                                                                 │
+│  Eval:     Taskset([tasks]).run(agent, runtime=LocalRuntime)    │
+│  Training: TrainingClient.step(batch) → Fireworks fine-tune     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Difficulty tiers
+
+| Tier | What the model sees | Transforms applied |
+|------|--------------------|--------------------|
+| 2    | Real entity and field names | Renames, retypes, enum remaps, unmapped fields, flatten nested, computed fields, denormalize |
+| 3    | Obfuscated names (EntityA, fa, fb…) | All of Tier 2 plus merges, splits, partitions, extract nested |
+
+Tier 3 requires the model to reverse-engineer which source entity maps to which destination entity purely from structural clues — enum value sets, ref targets, field type patterns — with no name hints.
