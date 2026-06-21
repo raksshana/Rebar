@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from generator.orchestration import orchestrate
 from generator.difficulty_dial import obfuscate_dest_schema, translate_dest_data
 from generator.data_generation import generate_source_data, make_gemini_model
-from agent.wrapper import AnthropicClient, _extract_code, _exec_script
+from agent.wrapper import AnthropicClient, OpenAIClient, FireworksClient, _extract_code, _exec_script
 from agent.prompt import build_script_prompt
 
 
@@ -131,9 +131,23 @@ def main():
     parser.add_argument("--verbose", action="store_true", help="Print generated code for each episode")
     args = parser.parse_args()
 
+    _fw = lambda m: FireworksClient(f"accounts/fireworks/models/{m}")
+
+    class GeminiClient:
+        def __init__(self):
+            from google import genai
+            self._client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        def generate_text(self, messages, system_prompt=""):
+            prompt = messages[0]["content"]
+            return self._client.models.generate_content(model="gemini-2.5-flash", contents=prompt).text
+
+    _account = "vihari5tejo-c218bcay"
+    _dep = lambda dep_id: FireworksClient(f"accounts/{_account}/deployments/{dep_id}")
+
     models = {
-        "claude-opus-4-8":          AnthropicClient("claude-opus-4-8"),
-        "claude-haiku-4-5-20251001": AnthropicClient("claude-haiku-4-5-20251001"),
+        "kimi-k2p7-code":    _dep("gkehanes"),
+        "claude-opus-4-6":   AnthropicClient("claude-opus-4-6"),
+        "gpt-5.5":           OpenAIClient("gpt-5.5"),
     }
 
     print(f"Generating {args.n} episode(s) per tier {args.tiers}...")

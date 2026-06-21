@@ -4,6 +4,8 @@ without HUD. Prints grader breakdown per (model, tier).
 
 Usage:
     python tests/test_baseline.py [--tiers 2 3] [--models claude gemini gpt]
+    python tests/test_baseline.py --models fireworks --tiers 3
+    python tests/test_baseline.py --models llama-8b llama-70b qwen llama-v3p3 --tiers 3
 """
 import argparse
 import builtins
@@ -15,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from generator.orchestration import orchestrate
 from generator.difficulty_dial import obfuscate_dest_schema, translate_dest_data
 from generator.data_generation import generate_source_data, make_gemini_model
-from agent.wrapper import AnthropicClient, OpenAIClient, _extract_code, _exec_script
+from agent.wrapper import AnthropicClient, OpenAIClient, FireworksClient, _extract_code, _exec_script
 from agent.prompt import build_script_prompt
 
 
@@ -36,12 +38,7 @@ class GeminiClient:
 
 def _call_model(client, prompt: str) -> str:
     """Unified call regardless of client type."""
-    if isinstance(client, AnthropicClient):
-        return client.generate_text(
-            messages=[{"role": "user", "content": prompt}],
-            system_prompt="",
-        )
-    if isinstance(client, OpenAIClient):
+    if isinstance(client, (AnthropicClient, OpenAIClient, FireworksClient)):
         return client.generate_text(
             messages=[{"role": "user", "content": prompt}],
             system_prompt="",
@@ -108,13 +105,27 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tiers", nargs="+", type=int, default=[2, 3])
     parser.add_argument("--models", nargs="+", default=["claude", "gemini", "gpt"],
-                        help="Any subset of: claude gemini gpt")
+                        help="Any subset of: claude gemini gpt llama-8b llama-70b llama-v3p3 qwen fireworks")
     args = parser.parse_args()
 
+    _fw = lambda m: FireworksClient(f"accounts/fireworks/models/{m}")
+    _fireworks_models = {
+        "llama-8b":   ("llama-v3p1-8b-instruct",    lambda: _fw("llama-v3p1-8b-instruct")),
+        "llama-70b":  ("llama-v3p1-70b-instruct",   lambda: _fw("llama-v3p1-70b-instruct")),
+        "llama-v3p3": ("llama-v3p3-70b-instruct",   lambda: _fw("llama-v3p3-70b-instruct")),
+        "qwen":       ("qwen2p5-coder-32b-instruct", lambda: _fw("qwen2p5-coder-32b-instruct")),
+        "qwen3p6":    ("qwen3p6-plus",               lambda: _fw("qwen3p6-plus")),
+        "kimi":       ("kimi-k2p7-code",             lambda: _fw("kimi-k2p7-code")),
+        "gpt-oss":    ("gpt-oss-120b",               lambda: _fw("gpt-oss-120b")),
+        "gpt-oss-20b":("gpt-oss-20b",               lambda: _fw("gpt-oss-20b")),
+    }
+
     all_models = {
-        "claude": ("claude-opus-4-8", lambda: AnthropicClient("claude-opus-4-8")),
-        "gemini": ("gemini-2.5-flash",  lambda: GeminiClient("gemini-2.5-flash")),
-        "gpt":    ("gpt-5.4",            lambda: OpenAIClient("gpt-5.4")),
+        "claude":   ("claude-opus-4-8",  lambda: AnthropicClient("claude-opus-4-8")),
+        "gemini":   ("gemini-2.5-flash", lambda: GeminiClient("gemini-2.5-flash")),
+        "gpt":      ("gpt-5.4",          lambda: OpenAIClient("gpt-5.4")),
+        "fireworks": None,  # expands to all four Fireworks models
+        **_fireworks_models,
     }
 
     models = {}
@@ -122,12 +133,17 @@ def main():
         if key not in all_models:
             print(f"Unknown model key '{key}'. Choose from: {list(all_models)}")
             sys.exit(1)
-        label, factory = all_models[key]
-        try:
-            models[label] = factory()
-        except Exception as e:
-            print(f"Could not initialise {key}: {e}")
-            sys.exit(1)
+        if key == "fireworks":
+            keys_to_add = list(_fireworks_models.keys())
+        else:
+            keys_to_add = [key]
+        for k in keys_to_add:
+            label, factory = all_models[k]
+            try:
+                models[label] = factory()
+            except Exception as e:
+                print(f"Could not initialise {k}: {e}")
+                sys.exit(1)
 
     tiers = args.tiers
 
