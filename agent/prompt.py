@@ -32,5 +32,7 @@ def build_script_prompt(
         "- Call `write_dest(entity_name, [record, ...])` to emit each batch of records\n"
         "- Each destination record must be a dict with fields matching the destination schema\n"
         "- `source_data` and `write_dest` are already available — do not redefine them\n"
-        "- Standard library imports (e.g. `import re`) are allowed"
+        "- Standard library imports (e.g. `import re`) are allowed\n\n"
+        "Output ONLY a single ```python ... ``` code block. "
+        "No explanation, no prose, no text before or after the block."
     )

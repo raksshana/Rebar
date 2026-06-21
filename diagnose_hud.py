@@ -33,7 +33,17 @@ async def run_episode(seed: int) -> float:
         model=MODEL,
         max_tokens=MAX_TOKENS,
         temperature=0.0,
-        messages=[{"role": "user", "content": episode.prompt}],
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a Python code generator. "
+                    "Output ONLY a single ```python ... ``` code block. "
+                    "No reasoning, no explanation, no text before or after the block."
+                ),
+            },
+            {"role": "user", "content": episode.prompt},
+        ],
     )
 
     raw = resp.choices[0].message.content or ""
@@ -43,6 +53,10 @@ async def run_episode(seed: int) -> float:
     print(f"Completion tokens: {tokens_used}  finish_reason: {finish}")
     if finish == "length":
         print("*** WARNING: response hit token limit — script likely truncated ***")
+
+    print(f"--- Raw response (first 300 chars) ---")
+    print(raw[:300])
+    print("---")
 
     code = _extract_code(raw)
     print(f"Extracted code   : {len(code)} chars")

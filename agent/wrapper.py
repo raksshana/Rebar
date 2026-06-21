@@ -33,10 +33,29 @@ from agent.prompt import build_script_prompt
 # ---------------------------------------------------------------------------
 
 def _extract_code(response: str) -> str:
-    """Pull the first ```python ... ``` block out of the model response."""
-    match = re.search(r"```python\n(.*?)```", response, re.DOTALL)
-    if match:
-        return match.group(1).strip()
+    """Pull the last fenced code block out of the model response.
+
+    Uses the LAST match so that chain-of-thought models whose reasoning
+    references snippets early still return the final, complete script.
+    Tries ```python, ```py, and plain ``` in that order.  If no fence is
+    found, falls back to the text starting at the first unambiguous Python
+    statement (import/from only — not # which appears in prose).
+    """
+    for pattern in (
+        r"```python\n(.*?)```",
+        r"```py\n(.*?)```",
+        r"```\n(.*?)```",
+    ):
+        matches = re.findall(pattern, response, re.DOTALL)
+        if matches:
+            return matches[-1].strip()
+
+    # No fence — skip prose and start at the first import/from statement.
+    lines = response.splitlines()
+    for i, line in enumerate(lines):
+        if line.strip().startswith(("import ", "from ")):
+            return "\n".join(lines[i:]).strip()
+
     return response.strip()
 
 
