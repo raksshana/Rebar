@@ -1,4 +1,3 @@
-import builtins
 import sys
 import os
 
@@ -7,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from hud import Environment
 
-from agent.wrapper import _extract_code, _exec_script
+from agent.wrapper import _extract_code, _exec_script, _RESTRICTED_BUILTINS
 from agent.prompt import build_script_prompt
 from generator.orchestration import orchestrate
 from generator.difficulty_dial import obfuscate_dest_schema, translate_dest_data
@@ -58,7 +57,7 @@ async def migrate(tier: int = 2):
         "write_dest": write_dest,
         "source_schema": task.source_schema,
         "dest_schema": dest_schema,
-        "__builtins__": builtins,
+        "__builtins__": _RESTRICTED_BUILTINS,
     })
 
     real_dest = translate_dest_data(dest_store, entity_map, field_maps) if tier == 3 else dest_store

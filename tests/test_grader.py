@@ -114,6 +114,80 @@ def case_empty_dest():
     print(f"  empty_dest: total={res['total']:.2f} (<15)  OK")
 
 
+def case_partition_correct():
+    """Perfect partition: each record in exactly the right bucket → 100."""
+    schema = {"entities": {"Issue": {"fields": {
+        "id":     {"kind": "id"},
+        "status": {"kind": "enum", "values": ["bug", "feature"]},
+        "title":  {"kind": "text"},
+    }}}}
+    transforms = [{"type": "partition", "entity": "Issue", "on_field": "status",
+                   "mapping": {"bug": "BugIssue", "feature": "FeatureIssue"}}]
+    source = {"Issue": [
+        {"id": 1, "status": "bug",     "title": "crash"},
+        {"id": 2, "status": "feature", "title": "dark mode"},
+        {"id": 3, "status": "bug",     "title": "freeze"},
+    ]}
+    dest = {
+        "BugIssue":     [{"id": 1, "title": "crash"}, {"id": 3, "title": "freeze"}],
+        "FeatureIssue": [{"id": 2, "title": "dark mode"}],
+    }
+    res = Grader(schema, transforms).grade(source, dest)
+    assert approx(res["coverage"],   1.0), res
+    assert approx(res["structural"], 1.0), res
+    assert approx(res["total"],    100.0), res
+    print("  partition_correct: coverage=1.0, structural=1.0, total=100  OK")
+
+
+def case_partition_shotgun():
+    """Shotgun: every record in every bucket — coverage and structural penalised.
+
+    The exploit: copy all records to all partition sub-entities.
+    Before the fix this scored ~100 (full recall, presence-only structural check).
+    After the fix coverage drops to 0.5 and structural to 0.5.
+    """
+    schema = {"entities": {"Issue": {"fields": {
+        "id":     {"kind": "id"},
+        "status": {"kind": "enum", "values": ["bug", "feature"]},
+        "title":  {"kind": "text"},
+    }}}}
+    transforms = [{"type": "partition", "entity": "Issue", "on_field": "status",
+                   "mapping": {"bug": "BugIssue", "feature": "FeatureIssue"}}]
+    source = {"Issue": [
+        {"id": 1, "status": "bug",     "title": "crash"},
+        {"id": 2, "status": "feature", "title": "dark mode"},
+        {"id": 3, "status": "bug",     "title": "freeze"},
+    ]}
+    all_recs = [{"id": 1, "title": "crash"}, {"id": 2, "title": "dark mode"},
+                {"id": 3, "title": "freeze"}]
+    dest = {"BugIssue": list(all_recs), "FeatureIssue": list(all_recs)}
+    res = Grader(schema, transforms).grade(source, dest)
+    # coverage: 3 recall hits / (3 recall + 3 false positives) = 0.5
+    assert approx(res["coverage"], 0.5), res
+    # structural: Jaccard(Bug)=2/3, Jaccard(Feat)=1/3 → avg=0.5
+    assert approx(res["structural"], 0.5), res
+    assert res["total"] < 60.0, res
+    print(f"  partition_shotgun: cov={res['coverage']:.3f} struct={res['structural']:.3f} total={res['total']:.1f}  OK")
+
+
+def case_extra_records_penalised():
+    """Extra dest records (IDs not in source) incur a precision penalty on coverage."""
+    schema = {"entities": {"User": {"fields": {
+        "id":   {"kind": "id"},
+        "name": {"kind": "text"},
+    }}}}
+    transforms = []
+    source = {"User": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}]}
+    # Correct records plus one fabricated extra.
+    dest = {"User": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"},
+                     {"id": 99, "name": "fake"}]}
+    res = Grader(schema, transforms).grade(source, dest)
+    # 2 recall hits, 1 false positive → coverage = 2/3
+    assert approx(res["coverage"], 2 / 3), res
+    assert res["total"] < 100.0, res
+    print(f"  extra_records_penalised: coverage={res['coverage']:.3f} total={res['total']:.1f}  OK")
+
+
 if __name__ == "__main__":
     print("Grader unit tests")
     case_rename_perfect()
@@ -122,4 +196,7 @@ if __name__ == "__main__":
     case_structural_perfect()
     case_structural_ignored()
     case_empty_dest()
+    case_partition_correct()
+    case_partition_shotgun()
+    case_extra_records_penalised()
     print("All grader unit tests passed.")

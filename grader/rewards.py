@@ -322,11 +322,17 @@ def score_coverage(source_schema, transformations, source_data, dest_data, ctx=N
         if ename in ctx.removed:
             continue
         src_recs = source_data.get(ename, [])
+        src_ids = _id_set(src_recs)
         dest_ids = _id_set(dest_data.get(ename, []))
+        # Recall: did each source record appear in dest?
         for src in src_recs:
             total += 1
             if src.get("id") in dest_ids:
                 hits += 1
+        # Precision: dest records whose IDs have no matching source are false positives.
+        for did in dest_ids:
+            if did not in src_ids:
+                total += 1
 
     # Merge — parent records should land in the merged entity (count-based).
     for t in ctx.merge_ts:
@@ -356,14 +362,32 @@ def score_coverage(source_schema, transformations, source_data, dest_data, ctx=N
         total += expected
         hits += min(actual, expected)
 
-    # Partition — each source record routes to the sub-entity for its value.
+    # Partition — each source record routes to exactly one sub-entity.
+    # Recall:    source record appeared in its correct bucket.
+    # Precision: records placed in the wrong bucket are false positives.
     for ent, t in ctx.partition_by_entity.items():
         sub_ids = {sub: _id_set(dest_data.get(sub, [])) for sub in t["mapping"].values()}
+
+        # Build the correct-assignment map once so the FP loop is O(n).
+        correct_sub_for = {}
+        for src in source_data.get(ent, []):
+            sub = ctx.route_partition(ent, src)
+            if sub is not None:
+                correct_sub_for[src.get("id")] = sub
+
+        # Recall
         for src in source_data.get(ent, []):
             total += 1
             sub = ctx.route_partition(ent, src)
             if sub is not None and src.get("id") in sub_ids.get(sub, set()):
                 hits += 1
+
+        # Precision: penalise every dest record that is in the wrong bucket
+        # (or whose ID does not exist in the source at all).
+        for sub in t["mapping"].values():
+            for aid in sub_ids.get(sub, set()):
+                if correct_sub_for.get(aid) != sub:
+                    total += 1  # false positive
 
     return _safe_ratio(hits, total)
 
@@ -708,16 +732,28 @@ def score_structural(source_schema, transformations, source_data, dest_data, ctx
             got += 1.0 if (expected == 0 or dest_data.get(t["new_entity"])) else 0.0
 
         elif tp == "partition":
-            # A sub-entity is legitimately empty when no source record carries
-            # its discriminator value — credit emptiness only in that case.
-            routed = {sub: 0 for sub in t["mapping"].values()}
+            # Each sub-entity must contain exactly the records routed to it.
+            # Score per sub using Jaccard(expected_ids, actual_ids) so that
+            # shotgun output (all records in every bucket) and round-robin
+            # (wrong records in right-shaped buckets) both score well below 1.
+            expected_by_sub = {sub: set() for sub in t["mapping"].values()}
             for src in source_data.get(t["entity"], []):
                 sub = ctx.route_partition(t["entity"], src)
-                if sub in routed:
-                    routed[sub] += 1
+                if sub in expected_by_sub:
+                    expected_by_sub[sub].add(src.get("id"))
             for sub in t["mapping"].values():
                 total += 1
-                got += 1.0 if (routed[sub] == 0 or dest_data.get(sub)) else 0.0
+                expected_ids = expected_by_sub[sub]
+                actual_ids = _id_set(dest_data.get(sub, []))
+                if not expected_ids:
+                    # Legitimately empty bucket — credit only when not spuriously
+                    # populated (empty is easy; wrong records would score 0).
+                    got += 1.0 if not actual_ids else 0.0
+                else:
+                    # Jaccard: |expected ∩ actual| / |expected ∪ actual|
+                    correct = len(expected_ids & actual_ids)
+                    union_size = len(expected_ids | actual_ids)
+                    got += correct / union_size if union_size > 0 else 1.0
 
         elif tp == "flatten_nested":
             total += 1

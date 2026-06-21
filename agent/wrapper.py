@@ -5,6 +5,25 @@ import io
 import re
 import time
 
+
+def _make_restricted_builtins():
+    """Builtins available to model-generated migration scripts.
+
+    Removes file I/O and code-execution functions that a model could use to
+    read grader source files, inspect the answer key, or execute arbitrary
+    code — all of which are RFT reward-hacking vectors.
+    """
+    safe = vars(builtins).copy()
+    for name in (
+        "open", "eval", "exec", "compile", "breakpoint",
+        "__loader__", "__spec__", "__build_class__",
+    ):
+        safe.pop(name, None)
+    return safe
+
+
+_RESTRICTED_BUILTINS = _make_restricted_builtins()
+
 from agent.trajectory import Step, Trajectory
 from agent.prompt import build_script_prompt
 
@@ -139,7 +158,7 @@ class ScriptAgentWrapper:
             "write_dest": env.write_dest,
             "source_schema": source_schema,
             "dest_schema": dest_schema,
-            "__builtins__": builtins,
+            "__builtins__": _RESTRICTED_BUILTINS,
         })
 
         step = Step(
