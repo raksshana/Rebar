@@ -105,7 +105,7 @@ def _llm_batch(context_label: str, llm_fields: dict, n: int, gemini_model) -> li
     )
     try:
         response = gemini_model.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
         text = response.text.strip()
