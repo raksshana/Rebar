@@ -26,82 +26,49 @@ These are exactly the skills Rebar is built to measure and improve. An agent mus
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        generator/                               │
+│                        Generator                                │
 │                                                                 │
-│  schema_generation.py  →  difficulty_dial.py  →  orchestrate() │
-│  Builds a random          Applies transforms      Ties together │
-│  source schema            (rename, retype,        schema +      │
-│  (entities, fields,       merge, split,           transforms +  │
-│  nested blocks)           partition, etc.)        Grader        │
-│                                                                 │
-│  data_generation.py                                             │
-│  Faker for structured fields (dates, enums, refs)              │
-│  Gemini for richtext and unrecognized text fields              │
+│  Builds a random source schema, applies difficulty transforms   │
+│  (rename, retype, merge, split, partition, etc.) to produce a  │
+│  destination schema + ground-truth transformation log.          │
+│  Faker fills structured fields; Gemini fills richtext.          │
+│  Tier 3: dest entity and field names are obfuscated             │
+│  (EntityA, fa, fb…) before being shown to the model.           │
 └───────────────────────────────┬─────────────────────────────────┘
-                                │ GeneratedTask
-                                │ (source_schema, dest_schema,
-                                │  transformations, grader)
+                                │ source schema, dest schema,
+                                │ source data, transformation log
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      migration_episode.py                       │
+│                          Model                                  │
 │                                                                 │
-│  build_episode(seed, tier, n_records)                           │
-│  Deterministic: same seed → identical schema + data every time  │
-│  Tier 3: obfuscates dest entity/field names (EntityA, fa, fb…) │
-│  before showing them to the model                               │
+│  Receives source schema, dest schema, and source data.          │
+│  Returns a Python script that calls write_dest() to emit        │
+│  migrated records.                                              │
 └───────────────────────────────┬─────────────────────────────────┘
-                                │ prompt
+                                │ migration script
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                          model                                  │
+│                          Grader                                 │
 │                                                                 │
-│  Receives: source schema, dest schema, source data              │
-│  Returns: a Python migration script                             │
-│                                                                 │
-│  Frontier baselines: Claude Opus/Sonnet, GPT-5.5, Gemini Flash  │
-│  RL target: Kimi K2.5 (fine-tuned via Fireworks + HUD GRPO)    │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │ script
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     agent/wrapper.py                            │
-│                                                                 │
-│  _extract_code()   strips ```python fences                      │
-│  _exec_script()    exec() with write_dest() injected            │
-│                    captures stdout/stderr, never raises          │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │ dest_store
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        grader/                                  │
-│                                                                 │
-│  Tier 3: translate_dest_data() reverses name obfuscation first  │
-│                                                                 │
-│  grader.grade(source_data, dest_data) scores five axes:         │
-│  • coverage               (0–1)  did records reach the right   │
-│                                  destination entity?            │
-│  • field_fidelity         (0–1)  are field values correct?      │
-│  • relationship_integrity (0–1)  do refs point to valid IDs?    │
-│  • type_correctness       (0–1)  are Python types right?        │
-│  • structural             (0–1)  were merges/splits/partitions  │
-│                                  actually performed?            │
+│  Executes the script, then scores the output on five axes:      │
+│  • coverage               did records reach the right entity?   │
+│  • field_fidelity         are field values correct?             │
+│  • relationship_integrity do refs point to valid IDs?           │
+│  • type_correctness       are Python types right?               │
+│  • structural             were merges/splits/partitions done?   │
 │                                                                 │
 │  total = base × (0.20 + 0.80 × structural) × 100               │
-│  structural acts as a multiplier — a model that copies fields   │
-│  but skips structural transforms is capped at ~20/100           │
+│  A model that copies fields but skips structural transforms     │
+│  is capped at ~20/100.                                          │
 └───────────────────────────────┬─────────────────────────────────┘
-                                │ reward (total / 100)
+                                │ reward (0–1)
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  harness/ + HUD platform                        │
+│                       HUD Training Loop                         │
 │                                                                 │
-│  harness/env.py    HUD Environment template — one episode       │
-│  harness/train.py  GRPO training loop via HUD TrainingClient    │
-│                    group_size rollouts per task, same seed →    │
-│                    identical task for all rollouts in a group   │
-│                                                                 │
-│  Eval:     Taskset([tasks]).run(agent, runtime=LocalRuntime)    │
-│  Training: TrainingClient.step(batch) → Fireworks fine-tune     │
+│  GRPO: each task runs group_size times with the same seed so    │
+│  all rollouts in a group see identical schemas and data.        │
+│  Reward signal drives fine-tuning of Kimi K2.5 via Fireworks.  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
