@@ -13,8 +13,7 @@ export default function RLChart() {
           <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />REINFORCEMENT LEARNING<span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />
         </div>
         <h2 style={{ margin:0, fontSize:48, lineHeight:1.05, fontWeight:700, letterSpacing:'-.025em' }}>
-          The model learned to migrate,<br/>
-          <span style={{ background:'linear-gradient(100deg,#8b7bff,#2fe6d6)', WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent' }}>repair, and verify.</span>
+          <span style={{ background:'linear-gradient(100deg,#8b7bff,#2fe6d6)', WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent' }}>Training curve.</span>
         </h2>
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'1.55fr 1fr', gap:18, alignItems:'stretch' }}>

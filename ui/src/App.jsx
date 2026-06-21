@@ -21,8 +21,7 @@ export default function App() {
       <div className="reticle reticle-tr" />
       <div className="reticle reticle-bl" />
       <div className="reticle reticle-br" />
-      <div className="side-label left">REBAR // SYS.ONLINE</div>
-      <div className="side-label right">LAT 37.77 // LON -122.41</div>
+
       <Nav />
       <Hero />
       <CapabilityStrip />

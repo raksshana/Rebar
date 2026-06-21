@@ -21,13 +21,13 @@ export default function Hero() {
           </span>
         </h1>
         <p style={{ margin:'30px 0 0', maxWidth:480, fontSize:17, lineHeight:1.55, color:'#9aa3b8' }}>
-          REBAR is an RL environment that trains agents on the long-horizon structural reasoning required to migrate data between mismatched schemas.
+          REBAR is an RL training stack for autonomous data migration. We generate verifiable schema-to-schema tasks and use them to train models on the long-horizon structural reasoning frontier LLMs still fail at.
         </p>
         <div style={{ display:'flex', gap:14, marginTop:40 }}>
           <button style={{ display:'flex', alignItems:'center', gap:9, padding:'14px 24px', borderRadius:8, border:'none', background:'linear-gradient(100deg,#8b7bff,#6d5cf0)', color:'#fff', fontWeight:600, fontSize:14.5, cursor:'pointer', boxShadow:'0 0 34px rgba(139,123,255,.4)', fontFamily:"'Space Grotesk',sans-serif" }}>
             Run a live migration →
           </button>
-          <button style={{ display:'flex', alignItems:'center', gap:9, padding:'14px 24px', borderRadius:8, border:'1px solid rgba(255,255,255,.14)', background:'rgba(255,255,255,.03)', color:'#cfd5e4', fontWeight:500, fontSize:14.5, cursor:'pointer', fontFamily:"'Space Grotesk',sans-serif" }}>
+          <button onClick={() => document.getElementById('benchmarks')?.scrollIntoView({ behavior:'smooth' })} style={{ display:'flex', alignItems:'center', gap:9, padding:'14px 24px', borderRadius:8, border:'1px solid rgba(255,255,255,.14)', background:'rgba(255,255,255,.03)', color:'#cfd5e4', fontWeight:500, fontSize:14.5, cursor:'pointer', fontFamily:"'Space Grotesk',sans-serif" }}>
             View benchmark results
           </button>
         </div>

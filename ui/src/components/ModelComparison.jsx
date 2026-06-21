@@ -33,13 +33,12 @@ function scoreColor(val, isTotal) {
 
 export default function ModelComparison() {
   return (
-    <section style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 80px' }}>
+    <section id="benchmarks" style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 80px' }}>
       <div style={{ display:'inline-flex', alignItems:'center', gap:10, fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.32em', color:'#8b7bff', marginBottom:22 }}>
         <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />FRONTIER BENCHMARKS
       </div>
       <h2 style={{ margin:'0 0 44px', fontSize:52, lineHeight:1.02, fontWeight:700, letterSpacing:'-.025em', maxWidth:880 }}>
-        How frontier models perform<br />
-        <span style={{ background:'linear-gradient(100deg,#8b7bff,#2fe6d6)', WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent' }}>on schema migration.</span>
+        Frontier Benchmarks
       </h2>
 
       <div style={{ border:'1px solid rgba(255,255,255,.08)', borderRadius:14, overflow:'hidden', background:'rgba(255,255,255,.015)' }}>
@@ -47,7 +46,10 @@ export default function ModelComparison() {
         <div style={{ display:'grid', gridTemplateColumns:'1fr repeat(4, 1fr)', borderBottom:'1px solid rgba(255,255,255,.08)' }}>
           <div style={{ padding:'14px 20px', fontFamily:"'JetBrains Mono',monospace", fontSize:10, letterSpacing:'.16em', color:'#5a6178' }}>METRIC</div>
           {MODELS.map(m => (
-            <div key={m.key} style={{ padding:'14px 20px', fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.08em', color:'#8b7bff', textAlign:'right' }}>{m.name}</div>
+            <div key={m.key} style={{ padding:'14px 20px', textAlign:'right' }}>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.08em', color:'#8b7bff' }}>{m.name}</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, fontWeight:700, color: scoreColor(DATA.total[m.key], true), marginTop:4 }}>{DATA.total[m.key].toFixed(1)}</div>
+            </div>
           ))}
         </div>
 
