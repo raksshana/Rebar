@@ -1,1 +1,5 @@
-{"projects":{"default":"rebar-31655"}}
+{
+  "projects": {
+    "default": "rebar-31655"
+  }
+}

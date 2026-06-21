@@ -93,7 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("--group", type=int, default=8, help="GRPO group size (repetitions per task)")
     parser.add_argument("--tasks-per-round", type=int, default=4)
     parser.add_argument("--lr", type=float, default=1e-5)
-    parser.add_argument("--max-tokens", type=int, default=4096)
+    parser.add_argument("--max-tokens", type=int, default=10000)
     parser.add_argument("--base-seed", type=int, default=42000)
     args = parser.parse_args()
 

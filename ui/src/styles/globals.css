@@ -1,0 +1,68 @@
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #06080f; }
+body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #e9edf6;
+}
+::selection { background: rgba(139,123,255,.35); color: #fff; }
+
+@keyframes scan       { 0%{transform:translateY(-100%)} 100%{transform:translateY(100%)} }
+@keyframes pulseDot   { 0%,100%{opacity:1} 50%{opacity:.25} }
+@keyframes floatY     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes gridDrift  { 0%{background-position:0 0} 100%{background-position:0 64px} }
+@keyframes glowPulse  { 0%,100%{opacity:.5} 50%{opacity:.9} }
+@keyframes ticker     { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+@keyframes sweep      { 0%{transform:translateY(-120%)} 100%{transform:translateY(120%)} }
+@keyframes drawLine   { to{stroke-dashoffset:0} }
+
+.grid-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(139,123,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,123,255,.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: gridDrift 12s linear infinite;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 80%);
+}
+.glow-violet {
+  position: fixed; top: -200px; right: -100px; width: 600px; height: 600px;
+  z-index: 0; pointer-events: none;
+  background: radial-gradient(circle, rgba(139,123,255,.22), transparent 65%);
+  filter: blur(20px); animation: glowPulse 7s ease-in-out infinite;
+}
+.glow-cyan {
+  position: fixed; bottom: -260px; left: -120px; width: 620px; height: 620px;
+  z-index: 0; pointer-events: none;
+  background: radial-gradient(circle, rgba(47,230,214,.12), transparent 65%);
+  filter: blur(24px); animation: glowPulse 9s ease-in-out infinite;
+}
+.scanlines {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0px, rgba(0,0,0,.18) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode: multiply; opacity: .5;
+}
+.vignette {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+.sweep-band {
+  position: fixed; left: 0; right: 0; top: 0; height: 60px;
+  z-index: 59; pointer-events: none;
+  background: linear-gradient(rgba(47,230,214,.06), transparent);
+  animation: sweep 7s linear infinite;
+}
+.reticle { position: fixed; width: 26px; height: 26px; z-index: 61; pointer-events: none; }
+.reticle-tl { top:14px; left:14px; border-left:2px solid rgba(139,123,255,.5); border-top:2px solid rgba(139,123,255,.5); }
+.reticle-tr { top:14px; right:14px; border-right:2px solid rgba(139,123,255,.5); border-top:2px solid rgba(139,123,255,.5); }
+.reticle-bl { bottom:14px; left:14px; border-left:2px solid rgba(47,230,214,.5); border-bottom:2px solid rgba(47,230,214,.5); }
+.reticle-br { bottom:14px; right:14px; border-right:2px solid rgba(47,230,214,.5); border-bottom:2px solid rgba(47,230,214,.5); }
+.side-label {
+  position: fixed; top: 50%; transform: translateY(-50%); z-index: 61; pointer-events: none;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .3em;
+  writing-mode: vertical-rl;
+}
+.side-label.left  { left:18px; color:rgba(139,123,255,.45); }
+.side-label.right { right:18px; color:rgba(47,230,214,.4); transform:translateY(-50%) rotate(180deg); }
