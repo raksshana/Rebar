@@ -74,10 +74,7 @@ export default function MigrationEngine() {
             </div>
             <span style={{ fontWeight:600, fontSize:14 }}>Rebar Migration Engine</span>
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:8, fontFamily:"'JetBrains Mono',monospace", fontSize:11.5, color:statusColor }}>
-            <span style={{ width:7, height:7, borderRadius:'50%', background:statusColor, display:'inline-block', animation:'pulseDot 1.4s infinite' }} />
-            {statusLabel}
-          </div>
+          <div />
           <div style={{ display:'flex', gap:10 }}>
             <button onClick={reset} style={{ padding:'9px 15px', border:'1px solid rgba(255,255,255,.14)', borderRadius:7, fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:'#cfd5e4', background:'transparent', cursor:'pointer' }}>Generate scenario</button>
             <button onClick={run}   style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 17px', borderRadius:7, border:'none', background:'linear-gradient(100deg,#8b7bff,#6d5cf0)', fontFamily:"'JetBrains Mono',monospace", fontSize:12, fontWeight:500, color:'#fff', cursor:'pointer', boxShadow:'0 0 24px rgba(139,123,255,.35)' }}>Run migration →</button>

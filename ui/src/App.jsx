@@ -5,7 +5,6 @@ import MigrationEngine from './components/MigrationEngine'
 import RLChart from './components/RLChart'
 import ModelComparison from './components/ModelComparison'
 import UseCases from './components/UseCases'
-import CTA from './components/CTA'
 
 export default function App() {
   return (
@@ -27,7 +26,6 @@ export default function App() {
       <RLChart />
       <ModelComparison />
       <UseCases />
-      <CTA />
     </div>
   )
 }

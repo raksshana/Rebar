@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const MODELS = [
   { name: 'GPT-5.5',            key: 'gpt'    },
@@ -8,11 +8,11 @@ const MODELS = [
 ]
 
 const METRICS = [
-  { label: 'Coverage',               key: 'coverage' },
-  { label: 'Field Fidelity',         key: 'field_fidelity' },
-  { label: 'Relationship Integrity', key: 'relationship_integrity' },
-  { label: 'Type Correctness',       key: 'type_correctness' },
-  { label: 'Structural',             key: 'structural' },
+  { label: 'Coverage',               key: 'coverage',               tip: 'Did all records reach the correct destination entity?' },
+  { label: 'Field Fidelity',         key: 'field_fidelity',         tip: 'Are field values correctly mapped and preserved?' },
+  { label: 'Relationship Integrity', key: 'relationship_integrity', tip: 'Do foreign-key references point to valid destination IDs?' },
+  { label: 'Type Correctness',       key: 'type_correctness',       tip: 'Are Python types correct for each field (str, int, bool, etc.)?' },
+  { label: 'Structural',             key: 'structural',             tip: 'Were merges, splits, and partitions executed? Models that skip structural transforms are capped at ~20/100.' },
 ]
 
 const DATA = {
@@ -31,6 +31,42 @@ function scoreColor(val, isTotal) {
   return '#ff6b8a'
 }
 
+function MetricRow({ metric, i }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'1fr repeat(4, 1fr)', borderBottom:'1px solid rgba(255,255,255,.05)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,.012)', position:'relative' }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{ padding:'16px 20px', fontSize:14, color: hovered ? '#cfd5e4' : '#717a90', cursor:'default', position:'relative', userSelect:'none' }}
+      >
+        {metric.label}
+        <span style={{ marginLeft:6, fontSize:11, color:'#5a6178', verticalAlign:'middle' }}>ⓘ</span>
+        {hovered && (
+          <div style={{
+            position:'absolute', left:0, top:'100%', zIndex:50,
+            background:'rgba(14,16,28,.97)', border:'1px solid rgba(139,123,255,.3)',
+            borderRadius:8, padding:'10px 14px', width:280,
+            fontSize:12.5, lineHeight:1.6, color:'#cfd5e4',
+            boxShadow:'0 8px 28px rgba(0,0,0,.5)',
+            pointerEvents:'none',
+          }}>
+            {metric.tip}
+          </div>
+        )}
+      </div>
+      {MODELS.map(m => {
+        const val = DATA[metric.key][m.key]
+        return (
+          <div key={m.key} style={{ padding:'16px 20px', textAlign:'right', fontFamily:"'JetBrains Mono',monospace", fontSize:15, fontWeight:500, color: scoreColor(val, false) }}>
+            {val.toFixed(2)}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function ModelComparison() {
   return (
     <section id="benchmarks" style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 80px' }}>
@@ -41,7 +77,7 @@ export default function ModelComparison() {
         Frontier Benchmarks
       </h2>
 
-      <div style={{ border:'1px solid rgba(255,255,255,.08)', borderRadius:14, overflow:'hidden', background:'rgba(255,255,255,.015)' }}>
+      <div style={{ border:'1px solid rgba(255,255,255,.08)', borderRadius:14, overflow:'visible', background:'rgba(255,255,255,.015)' }}>
         {/* Header */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr repeat(4, 1fr)', borderBottom:'1px solid rgba(255,255,255,.08)' }}>
           <div style={{ padding:'14px 20px', fontFamily:"'JetBrains Mono',monospace", fontSize:10, letterSpacing:'.16em', color:'#5a6178' }}>METRIC</div>
@@ -55,17 +91,7 @@ export default function ModelComparison() {
 
         {/* Metric rows */}
         {METRICS.map((metric, i) => (
-          <div key={metric.key} style={{ display:'grid', gridTemplateColumns:'1fr repeat(4, 1fr)', borderBottom:'1px solid rgba(255,255,255,.05)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,.012)' }}>
-            <div style={{ padding:'16px 20px', fontSize:14, color:'#717a90' }}>{metric.label}</div>
-            {MODELS.map(m => {
-              const val = DATA[metric.key][m.key]
-              return (
-                <div key={m.key} style={{ padding:'16px 20px', textAlign:'right', fontFamily:"'JetBrains Mono',monospace", fontSize:15, fontWeight:500, color: scoreColor(val, false) }}>
-                  {val.toFixed(2)}
-                </div>
-              )
-            })}
-          </div>
+          <MetricRow key={metric.key} metric={metric} i={i} />
         ))}
 
         {/* Total row */}
