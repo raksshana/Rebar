@@ -72,6 +72,37 @@ These are exactly the skills Rebar is built to measure and improve. An agent mus
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+## Frontier benchmarks
+
+We ran 5 Tier 3 migration episodes across four frontier models using identical schemas and source data. Scores are averaged over 5 episodes.
+
+| Metric | GPT-5.5 | Claude Sonnet 4.6 | Claude Opus 4.8 | Gemini 2.5 Flash |
+|---|---|---|---|---|
+| Coverage | 0.86 | 0.80 | 0.72 | 0.59 |
+| Field Fidelity | 0.91 | 0.87 | 0.80 | 0.63 |
+| Relationship Integrity | 0.94 | 0.95 | 0.87 | 0.68 |
+| Type Correctness | 0.98 | 0.98 | 0.97 | 0.79 |
+| Structural | 0.61 | 0.58 | 0.53 | 0.44 |
+| **Total** | **63.5** | **60.0** | **52.4** | **41.4** |
+
+Structural is a multiplier (`total = base × (0.20 + 0.80 × structural) × 100`), so every missed structural transform compounds across all other axes.
+
+### Sonnet 4.6 outperforms Opus 4.8
+
+The most consistent finding: Claude Sonnet 4.6 scores 7.6 points higher than Claude Opus 4.8 on every episode. The gap is entirely explained by structural reasoning. Sonnet explicitly analyzes destination entity schemas before writing code and correctly implements extract_nested, split, and computed transforms. Opus produces clean one-to-one field mappings but skips the harder structural layer.
+
+| Episode | What Opus misses | What Sonnet does |
+|---|---|---|
+| ep1 | Audit→EntityD bridge (split) | Creates EntityD from Audit actor info, links via ref |
+| ep2 | Org.metrics→EntityD (extract_nested) | Iterates metrics into flat EntityD rows with auto-inc IDs |
+| ep3 | Review.line_items→EntityF; Deployment→EntityL | Both transforms done correctly |
+| ep4 | Environment.comments→EntityE; Customer→4 entities | Extracts nested comments; routes Customer to all 4 dest entities |
+| ep5 | Workflow routed to wrong entity (EntityI vs EntityB) | Correct entity match via field signature |
+
+The clearest example is episode 2: Sonnet identifies `Organization.metrics` as a nested block and writes a loop that extracts each metric into a separate `EntityD` row with a foreign key back to Organization. Opus passes the metrics list through inline and never writes to EntityD at all. Same prompt. Same schema. The difference is in what the model does with the structural information in front of it.
+
+**See the raw scripts for yourself:** [`traces/`](traces/) contains the actual migration scripts both models generated for all 5 episodes, plus a full per-episode breakdown.
+
 ### Transforms applied
 
 Entity and field names are obfuscated (EntityA, fa, fb…). The model must reverse-engineer the mapping purely from structural clues — enum value sets, ref targets, field type patterns — with no name hints.
