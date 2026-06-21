@@ -43,7 +43,7 @@ Models that skip structural transforms (merges, splits, extract_nested, partitio
 
 ---
 
-## The smoking gun: Episode 2
+## Episode 2
 
 The clearest single example. Both models receive the same Organization entity with a `metrics` nested block field.
 
