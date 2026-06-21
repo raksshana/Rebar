@@ -1,0 +1,2 @@
+{"env": "rebar-migration", "id": "migrate", "args": {"seed": 1007, "tier": 3, "n_records": 3}, "slug": "tier3-seed1007"}
+{"env": "rebar-migration", "id": "migrate", "args": {"seed": 2014, "tier": 3, "n_records": 3}, "slug": "tier3-seed2014"}
