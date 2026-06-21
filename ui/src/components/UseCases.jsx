@@ -1,42 +1,65 @@
 import React from 'react'
+
 const CASES = [
-  { icon:'▤', title:'CRM modernization',    body:'Move customer, account, and activity data into a new system.' },
-  { icon:'✦', title:'Database consolidation', body:'Merge inconsistent schemas from acquired teams or legacy products.' },
-  { icon:'⟨⟩', title:'Platform replacement',  body:'Translate records and relationships while preserving business meaning.' },
+  {
+    icon: '⇄',
+    title: 'Schema heterogeneity',
+    scenario: 'Multiple vendors (Salesforce, Databricks, Foundry) with no single source of truth',
+    body: 'The same entity is modeled differently across systems. The agent must reconcile conflicting representations without explicit documentation.',
+  },
+  {
+    icon: '∫',
+    title: 'Business logic in queries',
+    scenario: '$100M reconciliation gaps after Redshift → Snowflake',
+    body: 'Transformation is not just reshaping columns. Computed meaning lives in ad-hoc SQL the agent never sees.',
+  },
+  {
+    icon: '#',
+    title: 'ID remapping',
+    scenario: 'Auto-incremented IDs in the new system with no traceability back to Salesforce',
+    body: 'New primary keys are generated and every foreign-key reference must be rewritten consistently across tables.',
+  },
+  {
+    icon: '⬡',
+    title: 'Ordering constraints at scale',
+    scenario: '32-layer dependency graph, ~1B records, strict ordering (migrate X before Y)',
+    body: 'Topological dependencies plus volume. One wrong step corrupts downstream tables with no easy rollback.',
+  },
+  {
+    icon: '⚠',
+    title: 'Data quality',
+    scenario: 'Excel exports with duplicate rows, broken links, and inconsistent date formats',
+    body: 'Nulls, format drift, orphan references, and duplicates that only surface when the script runs on the full dataset.',
+  },
 ]
-const STEPS = ['Connect systems','Generate plan','Execute safely','Repair failures','Approve output']
+
 export default function UseCases() {
   return (
     <section style={{ position:'relative', zIndex:10, maxWidth:1280, margin:'0 auto', padding:'30px 40px 60px', textAlign:'center' }}>
       <div style={{ display:'inline-flex', alignItems:'center', gap:10, fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.32em', color:'#8b7bff', marginBottom:22 }}>
-        <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />BUILT FOR REAL OPERATIONS<span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />
+        <span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />WHY THIS IS HARD<span style={{ width:24, height:1, background:'#8b7bff', display:'inline-block' }} />
       </div>
       <h2 style={{ margin:'0 0 44px', fontSize:48, lineHeight:1.05, fontWeight:700, letterSpacing:'-.025em' }}>
         Migrations too complex<br/>
         <span style={{ background:'linear-gradient(100deg,#8b7bff,#2fe6d6)', WebkitBackgroundClip:'text', backgroundClip:'text', color:'transparent' }}>to map by hand.</span>
       </h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, textAlign:'left' }}>
-        {CASES.map(c => (
-          <div key={c.title} style={{ border:'1px solid rgba(255,255,255,.08)', borderRadius:14, padding:24, background:'rgba(255,255,255,.015)' }}>
-            <div style={{ width:40, height:40, borderRadius:10, background:'rgba(139,123,255,.12)', border:'1px solid rgba(139,123,255,.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, marginBottom:18 }}>{c.icon}</div>
-            <div style={{ fontWeight:600, fontSize:16, marginBottom:8 }}>{c.title}</div>
-            <p style={{ margin:'0 0 16px', fontSize:13, lineHeight:1.5, color:'#9aa3b8' }}>{c.body}</p>
-            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11.5, color:'#8b7bff' }}>Explore use case →</div>
-          </div>
-        ))}
+        {CASES.slice(0,3).map(c => <Card key={c.title} c={c} />)}
       </div>
-      {/* workflow rail */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, marginTop:16, border:'1px solid rgba(139,123,255,.18)', borderRadius:14, padding:'22px 26px', background:'linear-gradient(100deg,rgba(139,123,255,.05),rgba(47,230,214,.03))', fontFamily:"'JetBrains Mono',monospace" }}>
-        {STEPS.map((s,i) => (
-          <React.Fragment key={s}>
-            <div style={{ textAlign:'left' }}>
-              <div style={{ fontSize:11, color: i===4?'#2fe6d6':'#8b7bff' }}>0{i+1}</div>
-              <div style={{ fontSize:13, color:'#e9edf6', marginTop:3 }}>{s}</div>
-            </div>
-            {i < 4 && <span style={{ color:'#5a6178' }}>→</span>}
-          </React.Fragment>
-        ))}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, textAlign:'left', marginTop:16 }}>
+        {CASES.slice(3).map(c => <Card key={c.title} c={c} />)}
       </div>
     </section>
+  )
+}
+
+function Card({ c }) {
+  return (
+    <div style={{ border:'1px solid rgba(255,255,255,.08)', borderRadius:14, padding:24, background:'rgba(255,255,255,.015)' }}>
+      <div style={{ width:36, height:36, borderRadius:9, background:'rgba(139,123,255,.12)', border:'1px solid rgba(139,123,255,.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, marginBottom:16, fontFamily:"'JetBrains Mono',monospace", color:'#8b7bff' }}>{c.icon}</div>
+      <div style={{ fontWeight:600, fontSize:15, marginBottom:6 }}>{c.title}</div>
+      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10.5, color:'#5a6178', marginBottom:10, lineHeight:1.5 }}>{c.scenario}</div>
+      <p style={{ margin:0, fontSize:13, lineHeight:1.55, color:'#9aa3b8' }}>{c.body}</p>
+    </div>
   )
 }
